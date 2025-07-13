@@ -9,23 +9,25 @@ USERNAME = os.environ.get("BROWSERSTACK_USERNAME")
 ACCESS_KEY = os.environ.get("BROWSERSTACK_ACCESS_KEY")
 URL = f"https://{USERNAME}:{ACCESS_KEY}@hub-cloud.browserstack.com/wd/hub"
 
-# Configuración del navegador (actualizado para Selenium 4+)
+# Configuración del navegador (Selenium 4+ compatible)
 capabilities = {
-    "os": "Windows",
-    "os_version": "10",
     "browserName": "Chrome",
-    "browser_version": "latest",
-    "name": "Prueba en Google Search",
+    "browserVersion": "latest",
+    "os": "Windows",
+    "osVersion": "10",
+    "sessionName": "Prueba en Google Search",
     "bstack:options": {
         "debug": "true",
-        "consoleLogs": "verbose"
+        "consoleLogs": "verbose",
+        "userName": USERNAME,
+        "accessKey": ACCESS_KEY
     }
 }
 
 def test_google_search():
     driver = webdriver.Remote(
         command_executor=URL,
-        options=webdriver.ChromeOptions().add_capabilities(capabilities)
+        desired_capabilities=capabilities  # Esta es la forma correcta para BrowserStack
     )
     
     try:
@@ -48,6 +50,7 @@ def test_google_search():
 
     except Exception as e:
         print(f"❌ Error: {e}")
+        driver.save_screenshot("error.png")
         driver.execute_script(
             'browserstack_executor: {"action": "setSessionStatus", "arguments": {"status":"failed", "reason": "Error en la prueba"}}'
         )
