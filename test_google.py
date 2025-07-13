@@ -1,36 +1,40 @@
 from selenium import webdriver
 from selenium.webdriver.common.keys import Keys
-import time
+from selenium.webdriver.common.by import By
 import os
+import time
 
-# Configuración de BrowserStack (usa variables de entorno)
-USERNAME = os.environ.get("cuentarecuperaci_XCNBUK")
-ACCESS_KEY = os.environ.get("pNFGbk5NPRQNazx9d4Nn")
+# Configuración de BrowserStack
+USERNAME = os.environ.get("BROWSERSTACK_USERNAME")
+ACCESS_KEY = os.environ.get("BROWSERSTACK_ACCESS_KEY")
 URL = f"https://{USERNAME}:{ACCESS_KEY}@hub-cloud.browserstack.com/wd/hub"
 
-# Configuración del navegador (Chrome en Windows 10)
-desired_cap = {
+# Configuración del navegador (actualizado para Selenium 4+)
+capabilities = {
     "os": "Windows",
     "os_version": "10",
-    "browser": "Chrome",
+    "browserName": "Chrome",
     "browser_version": "latest",
     "name": "Prueba en Google Search",
-    "browserstack.debug": "true",
-    "browserstack.console": "verbose"
+    "bstack:options": {
+        "debug": "true",
+        "consoleLogs": "verbose"
+    }
 }
 
 def test_google_search():
     driver = webdriver.Remote(
         command_executor=URL,
-        desired_capabilities=desired_cap
+        options=webdriver.ChromeOptions().add_capabilities(capabilities)
     )
+    
     try:
         # 1. Navegar a Google
         driver.get("https://www.google.com")
         assert "Google" in driver.title
 
         # 2. Buscar "BrowserStack"
-        search_box = driver.find_element("name", "q")
+        search_box = driver.find_element(By.NAME, "q")
         search_box.send_keys("BrowserStack")
         search_box.send_keys(Keys.RETURN)
         time.sleep(2)
@@ -38,6 +42,9 @@ def test_google_search():
         # 3. Verificar resultados
         assert "BrowserStack" in driver.title
         print("✅ Prueba exitosa!")
+        driver.execute_script(
+            'browserstack_executor: {"action": "setSessionStatus", "arguments": {"status":"passed", "reason": "Prueba exitosa"}}'
+        )
 
     except Exception as e:
         print(f"❌ Error: {e}")
