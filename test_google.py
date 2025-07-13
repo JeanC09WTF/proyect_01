@@ -1,33 +1,35 @@
 from selenium import webdriver
 from selenium.webdriver.common.keys import Keys
 from selenium.webdriver.common.by import By
+from selenium.webdriver.chrome.options import Options as ChromeOptions
 import os
 import time
 
 # Configuración de BrowserStack
 USERNAME = os.environ.get("BROWSERSTACK_USERNAME")
 ACCESS_KEY = os.environ.get("BROWSERSTACK_ACCESS_KEY")
-URL = f"https://{USERNAME}:{ACCESS_KEY}@hub-cloud.browserstack.com/wd/hub"
+URL = f"https://hub-cloud.browserstack.com/wd/hub"
 
-# Configuración del navegador (Selenium 4+ compatible)
-capabilities = {
-    "browserName": "Chrome",
-    "browserVersion": "latest",
-    "os": "Windows",
+# Configuración del navegador (compatible con Selenium 4.10+)
+options = ChromeOptions()
+options.set_capability("browserName", "Chrome")
+options.set_capability("browserVersion", "latest")
+options.set_capability("platformName", "Windows")
+options.set_capability("sessionName", "Prueba en Google Search")
+
+# Opciones específicas de BrowserStack
+options.set_capability("bstack:options", {
     "osVersion": "10",
-    "sessionName": "Prueba en Google Search",
-    "bstack:options": {
-        "debug": "true",
-        "consoleLogs": "verbose",
-        "userName": USERNAME,
-        "accessKey": ACCESS_KEY
-    }
-}
+    "debug": "true",
+    "consoleLogs": "verbose",
+    "userName": USERNAME,
+    "accessKey": ACCESS_KEY
+})
 
 def test_google_search():
     driver = webdriver.Remote(
         command_executor=URL,
-        desired_capabilities=capabilities  # Esta es la forma correcta para BrowserStack
+        options=options
     )
     
     try:
